@@ -1,8 +1,13 @@
 import {useState} from "react";
 
-function Square({value, onSquareClick}) {
+function Square({value, onSquareClick, isWinningSquare}) {
+    const squareClassName = "square" + (isWinningSquare ? " winning-square" : "");
 
-    return <button className="square" onClick={onSquareClick}>{value}</button>
+    return (
+        <button className={squareClassName} onClick={onSquareClick}>
+            {value}
+        </button>
+    );
 }
 
 function Board({xIsNext, squares, onPlay}) {
@@ -23,26 +28,27 @@ function Board({xIsNext, squares, onPlay}) {
         status = "Next Player: " + (xIsNext ? "X" : "O")
     }
 
+    const renderSquare = (i) => (
+        <Square
+            key={i}
+            value={squares[i]}
+            onSquareClick={() => handleClick(i)}
+            isWinningSquare={winner && winner.includes(i)}
+        />
+    );
+
+    const createBoardRow = (rowIndex) => (
+        <div className="board-row" key={rowIndex}>
+            {[0, 1, 2].map((colIndex) => renderSquare(rowIndex * 3 + colIndex))}
+        </div>
+    );
+
     return (
         <>
             <div className="status">{status}</div>
-            <div className="board-row">
-                <Square value={squares[0]} onSquareClick={() => handleClick(0)}/>
-                <Square value={squares[1]} onSquareClick={() => handleClick(1)}/>
-                <Square value={squares[2]} onSquareClick={() => handleClick(2)}/>
-            </div>
-            <div className="board-row">
-                <Square value={squares[3]} onSquareClick={() => handleClick(3)}/>
-                <Square value={squares[4]} onSquareClick={() => handleClick(4)}/>
-                <Square value={squares[5]} onSquareClick={() => handleClick(5)}/>
-            </div>
-            <div className="board-row">
-                <Square value={squares[6]} onSquareClick={() => handleClick(6)}/>
-                <Square value={squares[7]} onSquareClick={() => handleClick(7)}/>
-                <Square value={squares[8]} onSquareClick={() => handleClick(8)}/>
-            </div>
+            {[0, 1, 2].map((rowIndex) => createBoardRow(rowIndex))}
         </>
-    )
+    );
 }
 
 export default function Game() {
@@ -102,7 +108,7 @@ function calculateWinner(squares) {
     for (let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
         if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-            return squares[a];
+            return lines[i]
         }
     }
     return null
